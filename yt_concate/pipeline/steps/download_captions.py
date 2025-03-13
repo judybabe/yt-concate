@@ -27,18 +27,16 @@ class DownloadCaptions(Step):
             if utils.caption_file_exists(url):
                 print('found existing caption file')
                 continue
-            video_id = utils.get_video_id_from_url(url)
-            print(f"🎬 正在下載 {video_id} 的字幕...")
-
+            else:
+                video_id = utils.get_video_id_from_url(url)
+                print(f"正在下載 {video_id} 的字幕...")
             try:
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     ydl.download([url])
                 self.convert_vtt_to_srt(video_id)
                 self.convert_srt_to_txt(video_id)
-                print(f"✅ {video_id} 全部字幕轉檔完成！\n")
-
             except Exception as e:
-                print(f"⚠️ 無法下載 {video_id} 的字幕，錯誤: {e}")
+                print(f"無法下載 {video_id} 的字幕，錯誤: {e}")
         end = time.time()
         print('took', end - start, 'seconds')
 
@@ -50,18 +48,15 @@ class DownloadCaptions(Step):
         srt_path = os.path.join(CAPTIONS_DIR, f"{video_id}.srt")
 
         if not os.path.exists(vtt_path):
-            print(f"❌ 找不到 {vtt_path}，無法進行 VTT → SRT 轉檔。")
             return
 
         try:
             webvtt.read(vtt_path).save_as_srt(srt_path)
-            print(f"📄 已產生 {video_id}.srt")
-
-            # 如果不需要保留 .vtt，可選擇刪除
+            print(f"已產生 {video_id}.srt")
             os.remove(vtt_path)
 
         except Exception as e:
-            print(f"❌ 轉檔 {video_id} VTT → SRT 失敗，錯誤: {e}")
+            print(f"轉檔 {video_id} VTT → SRT 失敗，錯誤: {e}")
 
     def convert_srt_to_txt(self, video_id):
         """
@@ -71,7 +66,7 @@ class DownloadCaptions(Step):
         txt_path = os.path.join(CAPTIONS_DIR, f"{video_id}.txt")
 
         if not os.path.exists(srt_path):
-            print(f"❌ 找不到 {srt_path}，無法進行 SRT → TXT 轉檔。")
+            print(f"{video_id}下載失敗")
             return
 
         try:
@@ -87,4 +82,4 @@ class DownloadCaptions(Step):
             os.remove(srt_path)
 
         except Exception as e:
-            print(f"❌ 轉檔 {video_id} SRT → TXT 失敗，錯誤: {e}")
+            print(f"轉檔 {video_id} SRT → TXT 失敗，錯誤: {e}")
