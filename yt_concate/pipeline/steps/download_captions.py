@@ -1,12 +1,11 @@
 import os
+import time
 import yt_dlp
 import webvtt
 
 from .step import Step
 from .step import StepException
 from yt_concate.settings import CAPTIONS_DIR
-
-import time
 
 
 class DownloadCaptions(Step):
@@ -23,27 +22,25 @@ class DownloadCaptions(Step):
             'quiet': True,
         }
 
-        for url in data:
-            if utils.caption_file_exists(url):
+        for yt in data:
+            if utils.caption_file_exists(yt):
                 print('found existing caption file')
                 continue
             else:
-                video_id = utils.get_video_id_from_url(url)
+                video_id = yt.id
                 print(f"正在下載 {video_id} 的字幕...")
             try:
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    ydl.download([url])
+                    ydl.download([yt.url])
                 self.convert_vtt_to_srt(video_id)
                 self.convert_srt_to_txt(video_id)
             except Exception as e:
                 print(f"無法下載 {video_id} 的字幕，錯誤: {e}")
         end = time.time()
         print('took', end - start, 'seconds')
+        return data
 
     def convert_vtt_to_srt(self, video_id):
-        """
-        使用 webvtt 將 <video_id>.en.vtt 轉成 <video_id>.srt
-        """
         vtt_path = os.path.join(CAPTIONS_DIR, f"{video_id}.en.vtt")
         srt_path = os.path.join(CAPTIONS_DIR, f"{video_id}.srt")
 
@@ -54,14 +51,10 @@ class DownloadCaptions(Step):
             webvtt.read(vtt_path).save_as_srt(srt_path)
             print(f"已產生 {video_id}.srt")
             os.remove(vtt_path)
-
         except Exception as e:
             print(f"轉檔 {video_id} VTT → SRT 失敗，錯誤: {e}")
 
     def convert_srt_to_txt(self, video_id):
-        """
-        讀取 <video_id>.srt，過濾掉編號與時間軸，最後存成 <video_id>.txt
-        """
         srt_path = os.path.join(CAPTIONS_DIR, f"{video_id}.srt")
         txt_path = os.path.join(CAPTIONS_DIR, f"{video_id}.txt")
 
@@ -73,13 +66,10 @@ class DownloadCaptions(Step):
             # 讀取整個 SRT 檔
             with open(srt_path, 'r', encoding='utf-8') as f:
                 srt_content = f.read()
-
-            # 不做任何過濾，直接寫入 .txt
             with open(txt_path, 'w', encoding='utf-8') as txt_file:
                 txt_file.write(srt_content)
 
-            print(f"📄 已產生 {video_id}.txt，並保留 SRT 格式行。")
+            print(f"📄 已產生 {video_id}.txt")
             os.remove(srt_path)
-
         except Exception as e:
             print(f"轉檔 {video_id} SRT → TXT 失敗，錯誤: {e}")
