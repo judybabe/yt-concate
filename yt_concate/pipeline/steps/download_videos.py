@@ -1,9 +1,8 @@
 import os.path
 import yt_dlp
+
 from yt_concate.settings import VIDEOS_DIR
-
 from .step import Step
-
 
 class DownloadVideos(Step):
 
@@ -14,7 +13,7 @@ class DownloadVideos(Step):
 
         ydl_opts = {
             'outtmpl': os.path.join(VIDEOS_DIR, '%(id)s.%(ext)s'),
-            'format': 'bestvideo[vcodec=h264][height<=480]+bestaudio/best',
+            'format': 'worstvideo[ext=mp4]+bestaudio/best',
             'postprocessors': [{
                 'key': 'FFmpegVideoConvertor',
                 'preferedformat': 'mp4'

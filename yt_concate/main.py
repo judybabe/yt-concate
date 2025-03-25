@@ -12,14 +12,14 @@ from yt_concate.pipeline.pipeline import Pipeline
 from yt_concate.utils import Utils
 
 
-CHANNEL_ID = 'UCKSVUHI9rbbkXhvAXK-2uxA'
+CHANNEL_ID = 'UCkPc41kPIJfMI0ZCTHqybYA'
 
 
 def main():
     inputs = {
         'channel_id': CHANNEL_ID,
-        'search_word': 'incredible',
-        'limit': 30,
+        'search_word': '嘴炮',
+        'limit': 10,
     }
 
     steps = [
